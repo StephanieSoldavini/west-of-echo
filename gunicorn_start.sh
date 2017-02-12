@@ -1,1 +1,1 @@
-gunicorn -w 4 zork:app
+gunicorn --reload -w 4 zork:app

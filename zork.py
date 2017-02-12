@@ -1,13 +1,10 @@
-import logging
-
-from random import randint
-from flask import Flask
-from flask_ask import Ask, statement, question, session
-from pprint import pprint as pp
 import os
-from shutil import copyfile
 import errno
+import logging
 import subprocess
+from flask import Flask
+from shutil import copyfile
+from flask_ask import Ask, statement, question, session, request
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -22,6 +19,7 @@ SAVE_CMD = "\n save"
 
 ZORK_BINARY = "/home/ubuntu/zork/zork"
 
+
 def make_sure_path_exists(path):
     try:
         os.makedirs(path)
@@ -29,16 +27,18 @@ def make_sure_path_exists(path):
         if exception.errno != errno.EEXIST:
             raise
 
+def call_zork(uid, action):
+    s = subprocess.Popen([ZORK_BINARY], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, universal_newlines=True, cwd=SESSION_BASE_PATH+uid)
+    out, err = s.communicate(input=LOAD_CMD + action + SAVE_CMD, timeout=5)
+    return '\n'.join( out.split('\n')[5:-2] )[1:]
+
 
 @ask.launch
 def new_game():
     uid = session.user.userId
     make_sure_path_exists(SESSION_BASE_PATH + uid)
-    s = subprocess.Popen([ZORK_BINARY], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, universal_newlines=True, cwd=SESSION_BASE_PATH+uid)
-    out, err = s.communicate(input="restore, look", timeout=5)
-    #result = list(out.decode("utf-8"))[5:-1]
-    result = '\n'.join( out.split('\n')[5:-1] )
-    return question("Welcome to West of Echo!\n" + result)
+    result = "Welcome to West of Echo.  Zork, for Amazon Echo!\n" + call_zork(uid, "look")
+    return question(result)
 
 
 @ask.intent("ActionIntent")
@@ -50,18 +50,19 @@ def action(action):
         result = "Saved."
     elif action.strip().lower() == "restore":
         """ cp user_dsave.dat dsave.dat """
-        copyfile(SESSION_BASE_PATH + uid + USR_SAVE_FILENAME, SESSION_BASE_PATH + uid + SYS_SAVE_FILENAME)
+        if (os.path.isfile(SESSION_BASE_PATH + uid + USR_SAVE_FILENAME)):
+            copyfile(SESSION_BASE_PATH + uid + USR_SAVE_FILENAME, SESSION_BASE_PATH + uid + SYS_SAVE_FILENAME)
         result = "Restored."
     else:
-        s = subprocess.Popen([ZORK_BINARY], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, universal_newlines=True, cwd=SESSION_BASE_PATH+uid)
-        out, err = s.communicate(input=LOAD_CMD + action + SAVE_CMD, timeout=5)
-        result = '\n'.join( out.split('\n')[5:-2] )[1:]
+        result = call_zork(uid, action)
+    result = action + "\n . . . \n" + result
     return question(result)
 
 @ask.session_ended
 def session_ended():
-    uid = session.user.userId
-    os.remove(SESSION_BASE_PATH + uid + SYS_SAVE_FILENAME)
+    if (request.reason == "USER_INITIATED"):
+        uid = session.user.userId
+        os.remove(SESSION_BASE_PATH + uid + SYS_SAVE_FILENAME)
     return statement("Goodbye.")
 
 
