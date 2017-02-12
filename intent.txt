@@ -1,0 +1,9 @@
+{
+    "intents": [{
+        "intent": "ActionIntent",
+          "slots": [{
+            "name": "action",
+            "type": "AMAZON.LITERAL"
+        }]
+    }]
+}

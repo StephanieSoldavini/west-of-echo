@@ -1,0 +1,5 @@
+ActionIntent {north|action}
+ActionIntent {move west|action}
+ActionIntent {turn on lantern|action}
+ActionIntent {attack gnome with knife|action}
+ActionIntent {kill self with elvish sword|action}
