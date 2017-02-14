@@ -34,11 +34,12 @@ def make_sure_path_exists(path):
 def call_zork(uid, action):
     s = subprocess.Popen([DFROTZ_BINARY, ZORK_BINARY], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, universal_newlines=True, cwd=SESSION_BASE_PATH+uid)
     out, err = s.communicate(input=LOAD_CMD + SYS_SAVE_FILENAME + '\n' + action + SAVE_CMD + QUIT_CMD, timeout=5)
-    print("########################")
-    print(out)
-    print("########################")
-    return re.search(regex, out).group('out')
-      
+    out, location = re.search(regex, out).group('out', 'location')
+    if (location):
+        return location + '. ' + out
+    else:
+        return out
+
 @ask.launch
 def new_game():
     uid = session.user.userId
