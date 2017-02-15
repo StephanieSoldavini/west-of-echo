@@ -60,6 +60,11 @@ def action(action):
         if (os.path.isfile(SESSION_BASE_PATH + uid + USR_SAVE_FILENAME)):
             copyfile(SESSION_BASE_PATH + uid + USR_SAVE_FILENAME, SESSION_BASE_PATH + uid + '/' + SYS_SAVE_FILENAME)
         result = "Restored."
+    elif action.strip().lower() == "restart":
+        """ rm dsave.dat """
+        if (os.path.isfile(SESSION_BASE_PATH + uid + '/' +  SYS_SAVE_FILENAME)):
+            os.remove(SESSION_BASE_PATH + uid + '/' + SYS_SAVE_FILENAME)
+        result = "Restarted."
     else:
         result = call_zork(uid, action)
     result = action + "\n . . . \n" + result
