@@ -1,5 +1,10 @@
 ActionIntent {north|action}
-ActionIntent {move west|action}
+ActionIntent {south|action}
+ActionIntent {east|action}
+ActionIntent {west|action}
+ActionIntent {restore|action}
+ActionIntent {take all|action}
+ActionIntent {look|action}
 ActionIntent {turn on lantern|action}
 ActionIntent {attack gnome with knife|action}
-ActionIntent {kill self with elvish sword|action}
+ActionIntent {kill thief with elvish sword|action}
